@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:async'; 
 import 'package:flutter/material.dart';
 
 class ListaPage extends StatefulWidget {
@@ -6,10 +8,12 @@ class ListaPage extends StatefulWidget {
 }
 
 class _ListaPageState extends State<ListaPage> {
-  
+
   ScrollController _scrollController = new ScrollController();
   List<int> _listaNumeros = [];
   int _ultimoItem = 0;
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -17,9 +21,16 @@ class _ListaPageState extends State<ListaPage> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        _agregar10();
+        //_agregar10();
+        fetchData();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
   }
 
   @override
@@ -28,7 +39,12 @@ class _ListaPageState extends State<ListaPage> {
       appBar: AppBar(
         title: Text('Listas'),
       ),
-      body: _crearLista(),
+      body: Stack(
+        children: <Widget>[
+          _crearLista(),
+          _crearLoading(),
+        ],
+      ),
     );
   }
 
@@ -52,4 +68,44 @@ class _ListaPageState extends State<ListaPage> {
     }
     setState(() {});
   }
+
+
+
+
+  Future<Timer> fetchData() async {
+    _isLoading = true;
+    setState(() {});
+    final duration = new Duration(seconds: 2);
+    return new Timer(duration, respuestaHTTP);
+  }
+
+  void respuestaHTTP() {
+    _isLoading = false;
+    _scrollController.animateTo(_scrollController.position.pixels + 100,
+        curve: Curves.fastLinearToSlowEaseIn,
+        duration: Duration(microseconds: 250));
+    _agregar10();
+  }
+
+  Widget _crearLoading() {
+    if (_isLoading) {
+      return Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[CircularProgressIndicator()],
+          ),
+          SizedBox(height: 15.0,
+          )
+        ],
+      );
+    } else {
+      return Container();
+    }
+  }
+
+
+
 }
